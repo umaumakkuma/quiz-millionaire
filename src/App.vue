@@ -7,8 +7,11 @@
         <p class="sub-text"><span>{{ currentPrizeMoney }}</span>円</p>
         <div class="contents-main">
           <ul id="js-answer-area" class="answer-area"></ul>
+          <ul>
+            <li v-for="(choice, index) in choices" :key="index" @click="finalAnswer" :data-id="index">{{ choice }}</li>
+          </ul>
           <button @click="dropOut" class="btn btn--secondary">ドロップアウト</button>
-          <button @click="fiftyFifty" class="btn btn--secondary">50:50</button>
+          <button @click="fiftyfifty" class="btn btn--secondary" :class="{ 'btn--disabled': isUsedFiftyfifty }">50:50</button>
         </div>
       </div>
     </div>
@@ -63,11 +66,11 @@
       </div>
     </div>
 
-    <div v-show="isFiftyFifty" class="modal">
+    <div v-show="isFiftyfifty" class="modal">
       <div class="modal-inner">
         <h1>50:50 を使用しますか？</h1>
-        <button @click="fiftyFiftyCancel" class="btn btn--secondary">いいえ</button>
-        <button @click="fiftyFiftyApply" class="btn btn--primary">使用する</button>
+        <button @click="fiftyfiftyCancel" class="btn btn--secondary">いいえ</button>
+        <button @click="fiftyfiftyApply" class="btn btn--primary">使用する</button>
       </div>
     </div>
   </div>
@@ -83,24 +86,24 @@ export default {
       questionsData: [
         {
           'id': 1,
-          'text': '問題1',
+          'question': '問題1',
           'choices': ['選択肢1(正解)', '選択肢2', '選択肢3', '選択肢4'],
           'answer': 0,
-          'fiftyFifty': [0, 1]
+          'fiftyfifty': [0, 1]
         },
         {
           'id': 2,
-          'text': '問題2',
+          'question': '問題2',
           'choices': ['選択肢1', '選択肢2(正解)', '選択肢3', '選択肢4'],
           'answer': 1,
-          'fiftyFifty': [1, 3]
+          'fiftyfifty': [1, 3]
         },
         {
           'id': 3,
-          'text': '問題3',
+          'question': '問題3',
           'choices': ['選択肢1', '選択肢2', '選択肢3(正解)', '選択肢4'],
           'answer': 2,
-          'fiftyFifty': [1, 2]
+          'fiftyfifty': [1, 2]
         }
       ],
       prizeMoney: [
@@ -112,6 +115,7 @@ export default {
       ],
       questionCount: 0,
       choiceCurrentQuestion: 0,
+      choices: [],
       isOpening: true,
       isFinalAnswer: false,
       isJudge: false,
@@ -119,7 +123,8 @@ export default {
       isJudgeIncorrect: false,
       isResult: false,
       isDropOut: false,
-      isFiftyFifty: false,
+      isFiftyfifty: false,
+      isUsedFiftyfifty: false,
       minoDelay: 100,
     }
   },
@@ -131,7 +136,7 @@ export default {
       return this.questionsData[this.questionCount]['id']
     },
     questionText() {
-      return this.questionsData[this.questionCount]['text']
+      return this.questionsData[this.questionCount]['question']
     },
     currentPrizeMoney() {
       return this.prizeMoney[this.questionCount]
@@ -140,38 +145,33 @@ export default {
   methods: {
     init() {
       this.questionCount = 0
-      this.choiceCurrentQuestion = 0 
+      this.choiceCurrentQuestion = 0
+      this.choices = []
       this.isOpening = true
+      this.isFinalAnswer = false
+      this.isJudge = false
+      this.isJudgeCorrect = false
+      this.isJudgeIncorrect = false
+      this.isResult = false
+      this.isDropOut = false
+      this.isFiftyfifty = false
+      this.isUsedFiftyfifty = false
+      this.minoDelay = 100
     },
     main() {
       this.showQuestion()
-      this.choiceAnswer()
+      // this.choiceAnswer()
     },
     startGame() {
       this.isOpening = false
       this.main()
     },
     showQuestion() {
-      console.log(this.questionsData);
-      // 四択回答初期化&生成表示
-      const answerArr = []
-      this.questionsData[this.questionCount]['choices'].forEach((val, i) => {
-        answerArr.push(`<li class="choice" data-id=${i}>${this.questionsData[this.questionCount]['choices'][i]}</li>`)
-      })
-
-      document.getElementById('js-answer-area').innerHTML = answerArr.join('')
+      this.choices = this.questionsData[this.questionCount]['choices']
+      console.log(this.choices)
     },
-    choiceAnswer() {
-      const choices = document.querySelectorAll('.choice')
-
-      choices.forEach((choice) => {
-        choice.addEventListener('click', () => {
-          this.choiceCurrentQuestion = Number(choice.dataset.id)
-          this.finalAnswer(choice)
-        })
-      })
-    },
-    finalAnswer() {
+    finalAnswer(e) {
+      this.choiceCurrentQuestion = Number(e.target.dataset.id)
       this.isFinalAnswer = true
     },
     finalAnswerCancel() {
@@ -209,21 +209,23 @@ export default {
     showResult() {
       this.isResult = true
     },
-    fiftyFifty() {
-      this.isFiftyFifty = true
+    fiftyfifty() {
+      if (this.isUsedFiftyfifty) return
+      this.isFiftyfifty = true
     },
-    fiftyFiftyCancel() {
-      this.isFiftyFifty = false
+    fiftyfiftyCancel() {
+      this.isFiftyfifty = false
     },
-    fiftyFiftyApply() {
+    fiftyfiftyApply() {
       const choices = document.querySelectorAll('.choice')
-      const stayChoices = this.questionsData[this.questionCount]['fiftyFifty']
+      const stayChoices = this.questionsData[this.questionCount]['fiftyfifty']
       choices.forEach((val, i) => {
         if (!stayChoices.includes(i)) {
           val.classList.add('v-hidden')
         }
       })
-      this.isFiftyFifty = false
+      this.isFiftyfifty = false
+      this.isUsedFiftyfifty = true
     },
     dropOut() {
       this.isDropOut = true
@@ -233,7 +235,6 @@ export default {
     },
     dropOutApply() {
       this.init()
-      this.isDropOut = false
     },
   },
 }

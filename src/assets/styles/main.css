@@ -70,6 +70,14 @@ h1 {
   background-color: #2845c6;
   color: #fff;
 }
+.btn--disabled {
+  background-color: #a1a1a1;
+  color: #fff;
+  cursor: default;
+}
+.btn--disabled:hover {
+  opacity: 1;
+}
 .sub-text {
   margin-bottom: 10px;
   font-size: 24px;
