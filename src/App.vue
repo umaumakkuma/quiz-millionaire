@@ -6,12 +6,11 @@
         <p class="sub-text">{{ questionText }}</p>
         <p class="sub-text"><span>{{ currentPrizeMoney }}</span>円</p>
         <div class="contents-main">
-          <ul id="js-answer-area" class="answer-area"></ul>
-          <ul>
-            <li v-for="(choice, index) in choices" :key="index" @click="finalAnswer" :data-id="index">{{ choice }}</li>
+          <ul class="answer-area">
+            <li v-for="(value, name, key) in choices" :key="key" @click="finalAnswer" :data-id="name" :class="fiftyfiftyResult(name)">{{ value }}</li>
           </ul>
           <button @click="dropOut" class="btn btn--secondary">ドロップアウト</button>
-          <button @click="fiftyfifty" class="btn btn--secondary" :class="{ 'btn--disabled': isUsedFiftyfifty }">50:50</button>
+          <button @click="fiftyfiftyOpen" class="btn btn--secondary" :class="{ 'btn--disabled': isUsedFiftyfifty }">50:50</button>
         </div>
       </div>
     </div>
@@ -77,35 +76,14 @@
 </template>
 
 <script>
+import axios from 'axios'
 
 export default {
   name: 'App',
   components: {},
   data: () => {
     return {
-      questionsData: [
-        {
-          'id': 1,
-          'question': '問題1',
-          'choices': ['選択肢1(正解)', '選択肢2', '選択肢3', '選択肢4'],
-          'answer': 0,
-          'fiftyfifty': [0, 1]
-        },
-        {
-          'id': 2,
-          'question': '問題2',
-          'choices': ['選択肢1', '選択肢2(正解)', '選択肢3', '選択肢4'],
-          'answer': 1,
-          'fiftyfifty': [1, 3]
-        },
-        {
-          'id': 3,
-          'question': '問題3',
-          'choices': ['選択肢1', '選択肢2', '選択肢3(正解)', '選択肢4'],
-          'answer': 2,
-          'fiftyfifty': [1, 2]
-        }
-      ],
+      questionsData: [],
       prizeMoney: [
         10000,
         20000,
@@ -126,21 +104,25 @@ export default {
       isFiftyfifty: false,
       isUsedFiftyfifty: false,
       minoDelay: 100,
+      fiftyfifty: [],
     }
-  },
-  mounted() {
-    this.init()
   },
   computed: {
     questionNum() {
-      return this.questionsData[this.questionCount]['id']
+      return this.questionCount + 1
     },
     questionText() {
-      return this.questionsData[this.questionCount]['question']
+      return this.questionsData[this.questionCount]?.question || ""
     },
     currentPrizeMoney() {
       return this.prizeMoney[this.questionCount]
     },
+    fiftyfiftyResult() {
+      return function(name) {
+      if (!this.fiftyfifty.length) return
+        return this.fiftyfifty.includes(name) ? "" : "v-hidden"
+      }
+    }
   },
   methods: {
     init() {
@@ -157,21 +139,25 @@ export default {
       this.isFiftyfifty = false
       this.isUsedFiftyfifty = false
       this.minoDelay = 100
-    },
-    main() {
-      this.showQuestion()
-      // this.choiceAnswer()
+      this.isLoading = false
     },
     startGame() {
       this.isOpening = false
-      this.main()
+      axios.get('https://api-charades-fzx9fn3j387f.netlify.app/.netlify/functions/quiz-millionaire')
+        .then(response => {
+          this.questionsData = response.data
+          this.setQuestion()
+        })
+        .catch(e => {
+          console.log(e);
+        });
     },
-    showQuestion() {
+    setQuestion() {
+      this.fiftyfifty = []
       this.choices = this.questionsData[this.questionCount]['choices']
-      console.log(this.choices)
     },
     finalAnswer(e) {
-      this.choiceCurrentQuestion = Number(e.target.dataset.id)
+      this.choiceCurrentQuestion = e.target.dataset.id
       this.isFinalAnswer = true
     },
     finalAnswerCancel() {
@@ -204,26 +190,21 @@ export default {
       this.isJudgeCorrect = false
       this.isJudgeIncorrect = false
       this.questionCount++
-      this.main()
+      this.setQuestion()
     },
     showResult() {
       this.isResult = true
     },
-    fiftyfifty() {
+    fiftyfiftyOpen() {
       if (this.isUsedFiftyfifty) return
       this.isFiftyfifty = true
     },
     fiftyfiftyCancel() {
+      this.fiftyfifty = []
       this.isFiftyfifty = false
     },
     fiftyfiftyApply() {
-      const choices = document.querySelectorAll('.choice')
-      const stayChoices = this.questionsData[this.questionCount]['fiftyfifty']
-      choices.forEach((val, i) => {
-        if (!stayChoices.includes(i)) {
-          val.classList.add('v-hidden')
-        }
-      })
+      this.fiftyfifty = this.questionsData[this.questionCount]['fiftyfifty']
       this.isFiftyfifty = false
       this.isUsedFiftyfifty = true
     },
