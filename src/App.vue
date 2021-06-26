@@ -10,7 +10,7 @@
             <li v-for="(value, name, key) in choices" :key="key" @click="finalAnswer" :data-id="name" :class="fiftyfiftyResult(name)">{{ value }}</li>
           </ul>
           <button @click="dropOut" class="btn btn--secondary">ドロップアウト</button>
-          <button @click="fiftyfiftyOpen" class="btn btn--secondary" :class="{ 'btn--disabled': isUsedFiftyfifty }">50:50</button>
+          <button @click="fiftyfiftyOpen" class="btn btn--secondary" :class="{ 'btn--disabled': isFiftyfiftyUsed }">50:50</button>
         </div>
       </div>
     </div>
@@ -55,6 +55,14 @@
       </div>
     </div>
 
+    <div v-show="isFiftyfifty" class="modal">
+      <div class="modal-inner">
+        <h1>50:50 を使用しますか？</h1>
+        <button @click="fiftyfiftyCancel" class="btn btn--secondary">いいえ</button>
+        <button @click="fiftyfiftyApply" class="btn btn--primary">使用する</button>
+      </div>
+    </div>
+
     <div v-show="isDropOut" class="modal">
       <div class="modal-inner">
         <h1>ドロップアウト？</h1>
@@ -64,21 +72,11 @@
         <button @click="dropOutApply" class="btn btn--primary">はい</button>
       </div>
     </div>
-
-    <div v-show="isFiftyfifty" class="modal">
-      <div class="modal-inner">
-        <h1>50:50 を使用しますか？</h1>
-        <button @click="fiftyfiftyCancel" class="btn btn--secondary">いいえ</button>
-        <button @click="fiftyfiftyApply" class="btn btn--primary">使用する</button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-
 export default {
-  name: 'App',
   components: {},
   data: () => {
     return {
@@ -89,34 +87,59 @@ export default {
         50000,
         100000,
       ],
-      isOpening: true,
-      isFinalAnswer: false,
-      isJudge: false,
-      isJudgeCorrect: false,
-      isJudgeIncorrect: false,
-      isResult: false,
-      isDropOut: false,
-      isFiftyfifty: false,
-      isUsedFiftyfifty: false,
       minoDelay: 100,
-      fiftyfifty: [],
     }
   },
   computed: {
+    isOpening() {
+      return this.$store.getters.isOpening
+    },
     questionsData() {
-      return this.$store.state.questionsData
+      return this.$store.getters.questionsData
     },
     questionCount() {
-      return this.$store.state.questionCount
+      return this.$store.getters.questionCount
     },
     choseCurrentQuestion() {
-      return this.$store.state.choseCurrentQuestion
+      return this.$store.getters.choseCurrentQuestion
     },
     choices() {
-      return this.$store.state.choices
+      return this.$store.getters.choices
+    },
+    isFinalAnswer() {
+      return this.$store.getters.isFinalAnswer
+    },
+    isJudge() {
+      return this.$store.getters.isJudge
+    },
+    isJudgeCorrect() {
+      return this.$store.getters.isJudgeCorrect
+    },
+    isJudgeIncorrect() {
+      return this.$store.getters.isJudgeIncorrect
+    },
+    isResult() {
+      return this.$store.getters.isResult
+    },
+    isFiftyfifty() {
+      return this.$store.getters.isFiftyfifty
+    },
+    isFiftyfiftyUsed() {
+      return this.$store.getters.isFiftyfiftyUsed
+    },
+    fiftyfifty() {
+      return this.$store.getters.fiftyfifty
+    },
+    fiftyfiftyResult() {
+      return function(name) {
+      if (!this.fiftyfifty.length) return
+        return this.fiftyfifty.includes(name) ? "" : "v-hidden"
+      }
+    },
+    isDropOut() {
+      return this.$store.getters.isDropOut
     },
     currentQuestionNum() {
-      console.log(this.questionCount);
       return this.questionCount + 1
     },
     questionText() {
@@ -125,57 +148,39 @@ export default {
     currentPrizeMoney() {
       return this.prizeMoney[this.questionCount]
     },
-    fiftyfiftyResult() {
-      return function(name) {
-      if (!this.fiftyfifty.length) return
-        return this.fiftyfifty.includes(name) ? "" : "v-hidden"
-      }
-    }
   },
   methods: {
     init() {
-      // this.questionsData = []
-      // this.questionCount = 0
-      // this.choseCurrentQuestion = 0
-      // this.choices = []
-      this.isOpening = true
-      this.isFinalAnswer = false
-      this.isJudge = false
-      this.isJudgeCorrect = false
-      this.isJudgeIncorrect = false
-      this.isResult = false
-      this.isDropOut = false
-      this.isFiftyfifty = false
-      this.isUsedFiftyfifty = false
+      this.$store.commit('init')
+
       this.minoDelay = 100
       this.isLoading = false
     },
     async startGame() {
-      this.isOpening = false
+      this.$store.commit('isOpening', false)
       await this.$store.dispatch('getQuestionsData')
       this.setQuestion()
+    },
+    setQuestion() {
+      this.$store.commit('fiftyfifty', [])
+      this.$store.commit('choices', this.questionsData[this.questionCount]['choices'])
     },
     questionCountUp() {
       this.$store.commit('questionCountUp')
     },
-    setQuestion() {
-      this.fiftyfifty = []
-      this.$store.commit('choices', this.questionsData[this.questionCount]['choices'])
-    },
     finalAnswer(e) {
       this.$store.commit('choseCurrentQuestion', e.target.dataset.id)
-      this.isFinalAnswer = true
+      this.$store.commit('isFinalAnswer', true)
     },
     finalAnswerCancel() {
-      this.isFinalAnswer = false
+      this.$store.commit('isFinalAnswer', false)
     },
     finalAnswerApply() {
-      this.isFinalAnswer = false
+      this.$store.commit('isFinalAnswer', false)
       this.judgeQuestion()
     },
     judgeQuestion() {
-      this.isJudge = true
-
+      this.$store.commit('isJudge', true)
       // 選択肢が正解の場合は
       if (this.choseCurrentQuestion === this.questionsData[this.questionCount]['answer']) {
         if ((this.questionCount + 1) === Object.keys(this.questionsData).length) {
@@ -185,43 +190,43 @@ export default {
           }, this.minoDelay)
         }
         setTimeout(() => {
-          this.isJudgeCorrect = true
+          this.$store.commit('isJudgeCorrect', true)
         }, this.minoDelay)
       } else {
-        this.isJudgeIncorrect = true
+        this.$store.commit('isJudgeIncorrect', true)
       }
     },
     nextQuestion() {
-      this.isJudge = false
-      this.isJudgeCorrect = false
-      this.isJudgeIncorrect = false
+      this.$store.commit('isJudge', false)
+      this.$store.commit('isJudgeCorrect', false)
+      this.$store.commit('isJudgeIncorrect', false)
       this.questionCountUp()
       this.setQuestion()
     },
     showResult() {
-      this.isResult = true
+      this.$store.commit('isResult', true)
     },
     fiftyfiftyOpen() {
-      if (this.isUsedFiftyfifty) return
-      this.isFiftyfifty = true
+      if (this.isFiftyfiftyUsed) return
+      this.$store.commit('isFiftyfifty', true)
     },
     fiftyfiftyCancel() {
-      this.fiftyfifty = []
-      this.isFiftyfifty = false
+      this.$store.commit('isFiftyfifty', false)
     },
     fiftyfiftyApply() {
-      this.fiftyfifty = this.questionsData[this.questionCount]['fiftyfifty']
-      this.isFiftyfifty = false
-      this.isUsedFiftyfifty = true
+      this.$store.commit('fiftyfifty', this.questionsData[this.questionCount]['fiftyfifty'])
+      this.$store.commit('isFiftyfifty', false)
+      this.$store.commit('isFiftyfiftyUsed', true)
     },
     dropOut() {
-      this.isDropOut = true
+      this.$store.commit('isDropOut', true)
     },
     dropOutCancel() {
-      this.isDropOut = false
+      this.$store.commit('isDropOut', false)
     },
     dropOutApply() {
-      this.init()
+      this.$store.commit('isDropOut', false)
+      this.$store.commit('init')
     },
   },
 }
