@@ -2,7 +2,7 @@
   <div id="app">
     <div class="contents-wrap">
       <div class="contents-inner">
-        <h1>第<span>{{ questionNum }}</span>問</h1>
+        <h1>第<span>{{ currentQuestionNum }}</span>問</h1>
         <p class="sub-text">{{ questionText }}</p>
         <p class="sub-text"><span>{{ currentPrizeMoney }}</span>円</p>
         <div class="contents-main">
@@ -76,14 +76,12 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
   name: 'App',
   components: {},
   data: () => {
     return {
-      questionsData: [],
       prizeMoney: [
         10000,
         20000,
@@ -91,9 +89,6 @@ export default {
         50000,
         100000,
       ],
-      questionCount: 0,
-      choiceCurrentQuestion: 0,
-      choices: [],
       isOpening: true,
       isFinalAnswer: false,
       isJudge: false,
@@ -108,7 +103,20 @@ export default {
     }
   },
   computed: {
-    questionNum() {
+    questionsData() {
+      return this.$store.state.questionsData
+    },
+    questionCount() {
+      return this.$store.state.questionCount
+    },
+    choseCurrentQuestion() {
+      return this.$store.state.choseCurrentQuestion
+    },
+    choices() {
+      return this.$store.state.choices
+    },
+    currentQuestionNum() {
+      console.log(this.questionCount);
       return this.questionCount + 1
     },
     questionText() {
@@ -126,9 +134,10 @@ export default {
   },
   methods: {
     init() {
-      this.questionCount = 0
-      this.choiceCurrentQuestion = 0
-      this.choices = []
+      // this.questionsData = []
+      // this.questionCount = 0
+      // this.choseCurrentQuestion = 0
+      // this.choices = []
       this.isOpening = true
       this.isFinalAnswer = false
       this.isJudge = false
@@ -141,23 +150,20 @@ export default {
       this.minoDelay = 100
       this.isLoading = false
     },
-    startGame() {
+    async startGame() {
       this.isOpening = false
-      axios.get('https://api-charades-fzx9fn3j387f.netlify.app/.netlify/functions/quiz-millionaire')
-        .then(response => {
-          this.questionsData = response.data
-          this.setQuestion()
-        })
-        .catch(e => {
-          console.log(e);
-        });
+      await this.$store.dispatch('getQuestionsData')
+      this.setQuestion()
+    },
+    questionCountUp() {
+      this.$store.commit('questionCountUp')
     },
     setQuestion() {
       this.fiftyfifty = []
-      this.choices = this.questionsData[this.questionCount]['choices']
+      this.$store.commit('choices', this.questionsData[this.questionCount]['choices'])
     },
     finalAnswer(e) {
-      this.choiceCurrentQuestion = e.target.dataset.id
+      this.$store.commit('choseCurrentQuestion', e.target.dataset.id)
       this.isFinalAnswer = true
     },
     finalAnswerCancel() {
@@ -171,7 +177,7 @@ export default {
       this.isJudge = true
 
       // 選択肢が正解の場合は
-      if (this.choiceCurrentQuestion === this.questionsData[this.questionCount]['answer']) {
+      if (this.choseCurrentQuestion === this.questionsData[this.questionCount]['answer']) {
         if ((this.questionCount + 1) === Object.keys(this.questionsData).length) {
           // 最後の問題も正解のためリザルト画面表示
           setTimeout(() => {
@@ -189,7 +195,7 @@ export default {
       this.isJudge = false
       this.isJudgeCorrect = false
       this.isJudgeIncorrect = false
-      this.questionCount++
+      this.questionCountUp()
       this.setQuestion()
     },
     showResult() {
