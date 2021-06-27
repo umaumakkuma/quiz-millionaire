@@ -25,7 +25,7 @@
 
     <div v-show="isOpening" class="modal">
       <div class="modal-inner">
-        <h2 class="modal-inner__title">ボタンを押してゲームスタート</h2>
+        <h2 class="modal-inner__title">クイズ＄ミリオネア</h2>
         <div class="btn mx-auto">
           <button @click="startGame" class="btn__inner btn--primary"><span class="btn__inner__text">開始する</span></button>
         </div>
