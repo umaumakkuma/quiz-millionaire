@@ -5,10 +5,10 @@
         <p class="prize-money">TRIAL：{{ currentPrizeMoney }}円</p>
         <ul class="options">
           <li class="btn btn--small">
-            <button @click="dropOut" class="btn__inner"><span class="btn__inner__text">ドロップアウト</span></button>
+            <button @click="dropOut()" class="btn__inner"><span class="btn__inner__text">ドロップアウト</span></button>
           </li>
           <li class="btn btn--small">
-            <button @click="fiftyfiftyOpen" class="btn__inner" :class="{ 'btn--disabled': isFiftyfiftyUsed }"><span class="btn__inner__text">50:50</span></button>
+            <button @click="fiftyfiftyOpen()" class="btn__inner" :class="{ 'btn--disabled': isFiftyfiftyUsed }"><span class="btn__inner__text">50:50</span></button>
           </li>
         </ul>
       </div>
@@ -19,7 +19,7 @@
         <h2 class="question-text__inner"><span class="question-text__inner__text">{{ questionText }}</span></h2>
       </div>
       <ul class="choices">
-        <li v-for="(value, name, key) in choices" :key="key" class="btn btn--2-column btn--text-left mb-2" :class="fiftyfiftyResult(name)"><button @click="finalAnswer" :data-id="name" class="btn__inner"><span class="btn__inner__text">{{ name }}：{{ value }}</span></button></li>
+        <li v-for="(value, name, key) in choices" :key="key" class="btn btn--2-column btn--text-left mb-2" :class="fiftyfiftyResult(name)"><button @click="finalAnswer($event)" :data-id="name" class="btn__inner"><span class="btn__inner__text">{{ name }}：{{ value }}</span></button></li>
       </ul>
     </div>
 
@@ -27,7 +27,7 @@
       <div class="modal-inner">
         <h2 class="modal-inner__title">クイズ＄ミリオネア</h2>
         <div class="btn mx-auto">
-          <button @click="startGame" class="btn__inner btn--primary"><span class="btn__inner__text">開始する</span></button>
+          <button @click="startGame()" class="btn__inner btn--primary"><span class="btn__inner__text">開始する</span></button>
         </div>
       </div>
     </div>
@@ -37,10 +37,10 @@
         <h2 class="modal-inner__title">ファイナルアンサー？</h2>
         <ul class="d-flex justify-content-center">
           <li class="btn btn--medium">
-            <button @click="finalAnswerCancel" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
+            <button @click="finalAnswerCancel()" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
           </li>
           <li class="btn btn--medium">
-            <button @click="finalAnswerApply" class="btn__inner"><span class="btn__inner__text">ファイナルアンサー！</span></button>
+            <button @click="finalAnswerApply()" class="btn__inner"><span class="btn__inner__text">ファイナルアンサー！</span></button>
           </li>
         </ul>
       </div>
@@ -52,14 +52,14 @@
         <div v-show="isJudgeCorrect">
           <p class="modal-inner__text">正解！</p>
           <div class="btn btn--medium mx-auto">
-            <button @click="nextQuestion" class="btn__inner"><span class="btn__inner__text">次の問題へ</span></button>
+            <button @click="nextQuestion()" class="btn__inner"><span class="btn__inner__text">次の問題へ</span></button>
           </div>
         </div>
         <div v-show="isJudgeIncorrect">
           <p class="modal-inner__text">不正解！</p>
           <p class="modal-inner__text">次回のチャレンジをお待ちしています。</p>
           <div class="btn btn--medium mx-auto">
-            <button @click="init" class="btn__inner"><span class="btn__inner__text">クイズ開始画面に戻る</span></button>
+            <button @click="init()" class="btn__inner"><span class="btn__inner__text">クイズ開始画面に戻る</span></button>
           </div>
         </div>
       </div>
@@ -77,10 +77,10 @@
         <h2 class="modal-inner__title">50:50 を使用しますか？</h2>
         <ul class="d-flex justify-content-center">
           <li class="btn btn--medium">
-            <button @click="fiftyfiftyCancel" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
+            <button @click="fiftyfiftyCancel()" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
           </li>
           <li class="btn btn--medium">
-            <button @click="fiftyfiftyApply" class="btn__inner"><span class="btn__inner__text">使用する</span></button>
+            <button @click="fiftyfiftyApply()" class="btn__inner"><span class="btn__inner__text">使用する</span></button>
           </li>
         </ul>
       </div>
@@ -93,10 +93,10 @@
         本当にドロップアウトしますか？</p>
         <ul class="d-flex justify-content-center">
           <li class="btn btn--medium">
-            <button @click="dropOutCancel" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
+            <button @click="dropOutCancel()" class="btn__inner"><span class="btn__inner__text">いいえ</span></button>
           </li>
           <li class="btn btn--medium">
-            <button @click="dropOutApply" class="btn__inner"><span class="btn__inner__text">はい</span></button>
+            <button @click="dropOutApply()" class="btn__inner"><span class="btn__inner__text">はい</span></button>
           </li>
         </ul>
       </div>
@@ -202,7 +202,6 @@ export default {
       this.$store.commit('questionCountUp')
     },
     finalAnswer(e) {
-      console.log(e);
       this.$store.commit('choseCurrentQuestion', e.target.dataset.id)
       this.$store.commit('isFinalAnswer', true)
     },
