@@ -45,6 +45,8 @@ export default new Vuex.Store({
       state.choseCurrentQuestion = ''
       state.choices = []
       state.isJudge = false
+      state.isJudgeCorrect = false,
+      state.isJudgeIncorrect = false,
       state.isResult = false
       state.isFiftyfifty = false
       state.isFiftyfiftyUsed = false
