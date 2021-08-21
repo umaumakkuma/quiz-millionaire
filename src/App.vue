@@ -65,12 +65,7 @@
       </div>
     </div>
 
-    <div v-show="isResult" class="modal">
-      <div class="modal-inner">
-        <h2 class="modal-inner__title">全問正解おめでとう！</h2>
-        <p class="modal-inner__text">賞金<span>{{ currentPrizeMoney }}</span>円はあなたのものです！</p>
-      </div>
-    </div>
+    <result />
 
     <div v-show="isFiftyfifty" class="modal">
       <div class="modal-inner">
@@ -105,8 +100,12 @@
 </template>
 
 <script>
+import result from "./components/Result.vue"
+
 export default {
-  components: {},
+  components: {
+    result,
+  },
   data: () => {
     return {
       prizeMoney: [
@@ -156,9 +155,6 @@ export default {
     },
     isJudgeIncorrect() {
       return this.$store.getters.isJudgeIncorrect
-    },
-    isResult() {
-      return this.$store.getters.isResult
     },
     isFiftyfifty() {
       return this.$store.getters.isFiftyfifty
