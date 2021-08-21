@@ -97,7 +97,8 @@ export default new Vuex.Store({
   },
   actions: {
     async getQuestionsData({ commit }) {
-      const data = await axios.get('https://api-charades-fzx9fn3j387f.netlify.app/.netlify/functions/quiz-millionaire')
+      const data = await axios.get('https://jolly-murdock-183951.netlify.app/api/millionaire/')
+      // const data = await axios.get('https://jolly-murdock-183951.netlify.app/api/millionaire-dev/')
         .then(res => res.data)
         .catch(e => {
           console.log(e);
