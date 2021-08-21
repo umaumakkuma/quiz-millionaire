@@ -264,8 +264,3 @@ export default {
   },
 }
 </script>
-
-<style>
-@import "./assets/styles/ress.css";
-@import "./assets/styles/main.css";
-</style>
